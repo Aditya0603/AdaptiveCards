@@ -8,8 +8,8 @@
 using namespace AdaptiveSharedNamespace;
 
 BaseCardElement::BaseCardElement(CardElementType type, Spacing spacing, bool separator, HeightType height) :
-    m_type(type), m_spacing(spacing), m_typeString(CardElementTypeToString(type)), m_separator(separator),
-    m_height(height), m_isVisible(true)
+    m_requires(0), m_type(type), m_spacing(spacing), m_typeString(CardElementTypeToString(type)), m_additionalProperties(),
+    m_height(height), m_fallbackType(FallbackType::None), m_separator(separator), m_isVisible(true)
 {
     PopulateKnownPropertiesSet();
 }
@@ -88,6 +88,21 @@ bool BaseCardElement::GetIsVisible() const
 void BaseCardElement::SetIsVisible(const bool value)
 {
     m_isVisible = value;
+}
+
+BaseCardElement::FallbackType BaseCardElement::GetFallbackType() const
+{
+    return m_fallbackType;
+}
+
+// std::shared_ptr<BaseCardElement> GetFallbackContent() const
+// {
+
+// }
+
+bool BaseCardElement::MeetsRequirements(const std::unordered_map<std::string, std::string>& /*hostProvides*/) const
+{
+    return true;
 }
 
 const CardElementType BaseCardElement::GetElementType() const

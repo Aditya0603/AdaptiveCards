@@ -41,6 +41,18 @@ namespace AdaptiveSharedNamespace
         virtual bool GetIsVisible() const;
         virtual void SetIsVisible(const bool value);
 
+        enum class FallbackType
+        {
+            None,
+            Drop,
+            Content
+        };
+
+        virtual FallbackType GetFallbackType() const;
+        // virtual std::shared_ptr<BaseCardElement> GetFallbackContent() const;
+
+        virtual bool MeetsRequirements(const std::unordered_map<std::string, std::string>& hostProvides) const;
+
         virtual const CardElementType GetElementType() const;
 
         virtual std::string Serialize() const;
@@ -61,13 +73,15 @@ namespace AdaptiveSharedNamespace
     private:
         virtual void PopulateKnownPropertiesSet();
 
+        std::unordered_map<std::string, std::string> m_requires;
         CardElementType m_type;
         Spacing m_spacing;
         std::string m_id;
         std::string m_typeString;
-        bool m_separator;
         Json::Value m_additionalProperties;
         HeightType m_height;
+        FallbackType m_fallbackType;
+        bool m_separator;
         bool m_isVisible;
     };
 
