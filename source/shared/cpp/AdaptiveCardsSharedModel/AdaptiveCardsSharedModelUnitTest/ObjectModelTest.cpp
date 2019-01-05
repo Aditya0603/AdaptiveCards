@@ -452,5 +452,38 @@ namespace AdaptiveCardsSharedModelUnitTest
             // default value test
             runWrapTest<ToggleInput>(body, 1, false);
         }
+
+        TEST_METHOD(FallbackSerializationTest)
+        {
+            // Card without card-level selectAction
+            std::string cardStr = "{\
+                \"$schema\": \"http://adaptivecards.io/schemas/adaptive-card.json\",\
+                \"type\" : \"AdaptiveCard\",\
+                \"version\" : \"1.2\",\
+                \"body\" : [\
+                    {\
+                            \"type\": \"TextBlock\",\
+                            \"text\" : \"TextBlock with fallback drop\",\
+                            \"fallback\" : \"drop\"\
+                    },\
+                    {\
+                            \"type\": \"TextBlock\",\
+                            \"text\" : \"TextBlock with fallback content\",\
+                            \"fallback\" : \
+                            {\
+                                    \"type\": \"TextBlock\",\
+                                    \"text\" : \"fallback content goes here\"\
+                            }\
+                    }\
+                ]\
+            }";
+            auto parseResult = AdaptiveCard::DeserializeFromString(cardStr, "1.2");
+            auto card = parseResult->GetAdaptiveCard();
+            auto body = card->GetBody();
+            auto textBlock1 = std::static_pointer_cast<TextBlock>(body.at(0));
+            Assert::IsTrue(FallbackType::Drop == textBlock1->GetFallbackType(), L"Drop type");
+            auto textBlock2 = std::static_pointer_cast<TextBlock>(body.at(1));
+            Assert::IsTrue(FallbackType::Content == textBlock2->GetFallbackType(), L"Content type");
+        }
     };
 }

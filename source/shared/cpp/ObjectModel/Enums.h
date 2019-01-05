@@ -382,4 +382,12 @@ namespace AdaptiveSharedNamespace
         Stretch
     };
     DECLARE_ADAPTIVECARD_ENUM(HeightType);
+
+    // Important: "Content" below is a placeholder for a JSON value -- we can't perform automatic mapping.
+    enum class FallbackType
+    {
+        None,
+        Drop,
+        Content
+    };
 }

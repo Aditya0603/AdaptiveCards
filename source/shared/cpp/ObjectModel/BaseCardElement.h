@@ -4,14 +4,14 @@
 #include "Enums.h"
 #include "json/json.h"
 #include "BaseActionElement.h"
+#include "BaseElementFallback.h"
 #include "ParseUtil.h"
 #include "Separator.h"
 #include "RemoteResourceInformation.h"
 
 namespace AdaptiveSharedNamespace
 {
-    class Container;
-    class BaseCardElement
+    class BaseCardElement : public BaseElementFallback<BaseCardElement>
     {
     public:
         BaseCardElement(CardElementType type, Spacing spacing, bool separator, HeightType height);
@@ -41,18 +41,6 @@ namespace AdaptiveSharedNamespace
         virtual bool GetIsVisible() const;
         virtual void SetIsVisible(const bool value);
 
-        enum class FallbackType
-        {
-            None,
-            Drop,
-            Content
-        };
-
-        virtual FallbackType GetFallbackType() const;
-        // virtual std::shared_ptr<BaseCardElement> GetFallbackContent() const;
-
-        virtual bool MeetsRequirements(const std::unordered_map<std::string, std::string>& hostProvides) const;
-
         virtual const CardElementType GetElementType() const;
 
         virtual std::string Serialize() const;
@@ -67,20 +55,17 @@ namespace AdaptiveSharedNamespace
 
     protected:
         static Json::Value SerializeSelectAction(const std::shared_ptr<BaseActionElement> selectAction);
-
         std::unordered_set<std::string> m_knownProperties;
 
     private:
         virtual void PopulateKnownPropertiesSet();
 
-        std::unordered_map<std::string, std::string> m_requires;
         CardElementType m_type;
         Spacing m_spacing;
         std::string m_id;
         std::string m_typeString;
         Json::Value m_additionalProperties;
         HeightType m_height;
-        FallbackType m_fallbackType;
         bool m_separator;
         bool m_isVisible;
     };
@@ -92,13 +77,30 @@ namespace AdaptiveSharedNamespace
 
         ParseUtil::ThrowIfNotJsonObject(json);
 
-        baseCardElement->SetSpacing(
-            ParseUtil::GetEnumValue<Spacing>(json, AdaptiveCardSchemaKey::Spacing, Spacing::Default, SpacingFromString));
-        baseCardElement->SetSeparator(ParseUtil::GetBool(json, AdaptiveCardSchemaKey::Separator, false));
-        baseCardElement->SetIsVisible(ParseUtil::GetBool(json, AdaptiveCardSchemaKey::IsVisible, true));
-        baseCardElement->SetId(ParseUtil::GetString(json, AdaptiveCardSchemaKey::Id));
+        // TODO: add fallback content
+        const auto fallbackValue = ParseUtil::ExtractJsonValue(json, AdaptiveCardSchemaKey::Fallback, false);
+        if (!fallbackValue.empty())
+        {
+            if (fallbackValue.isString())
+            {
+                auto fallbackStringValue = ParseUtil::ToLowercase(fallbackValue.asString());
+                if (fallbackStringValue == "drop")
+                {
+                    baseCardElement->SetFallbackType(FallbackType::Drop);
+                }
+                // else throw?
+            }
+            // else if it's json
+        }
+
         baseCardElement->SetHeight(
             ParseUtil::GetEnumValue<HeightType>(json, AdaptiveCardSchemaKey::Height, HeightType::Auto, HeightTypeFromString));
+        baseCardElement->SetId(ParseUtil::GetString(json, AdaptiveCardSchemaKey::Id));
+        baseCardElement->SetIsVisible(ParseUtil::GetBool(json, AdaptiveCardSchemaKey::IsVisible, true));
+        // TODO: add requires
+        baseCardElement->SetSeparator(ParseUtil::GetBool(json, AdaptiveCardSchemaKey::Separator, false));
+        baseCardElement->SetSpacing(
+            ParseUtil::GetEnumValue<Spacing>(json, AdaptiveCardSchemaKey::Spacing, Spacing::Default, SpacingFromString));
 
         // Walk all properties and put any unknown ones in the additional properties json
         for (auto it = json.begin(); it != json.end(); ++it)
