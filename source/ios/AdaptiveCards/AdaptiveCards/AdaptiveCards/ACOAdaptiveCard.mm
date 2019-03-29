@@ -98,6 +98,13 @@ using namespace AdaptiveCards;
     _adaptiveCard = card;
 }
 
+- (NSString * ) backgroundImage {
+    if(!_adaptiveCard->GetBackgroundImage().empty()) {
+        return [NSString stringWithCString:_adaptiveCard->GetBackgroundImage().c_str() encoding:[NSString defaultCStringEncoding]];
+    }
+    return nil;
+}
+
 - (NSArray<ACORemoteResourceInformation *> *)remoteResourceInformation
 {
     NSMutableArray *mutableRemoteResources = nil;

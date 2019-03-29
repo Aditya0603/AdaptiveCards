@@ -82,9 +82,14 @@
             element->SetId(ID.substr(0, idx));
         }
     }
-
-    lab.numberOfLines = textConfig.wrap ? 0 : 1;
-
+    lab.editable = NO;
+    lab.backgroundColor = [UIColor clearColor];
+    lab.textContainer.lineFragmentPadding = 0;
+    lab.textContainerInset = UIEdgeInsetsZero;
+    lab.layoutManager.usesFontLeading = false;
+    lab.textContainer.maximumNumberOfLines = textConfig.wrap ? 0 : 1;
+    lab.scrollEnabled = NO;
+    [lab sizeToFit];
     return lab;
 }
 
@@ -137,7 +142,7 @@
             constraintForTitleLab.priority = UILayoutPriorityRequired;
         }
         NSString *value = [NSString stringWithCString:fact->GetValue().c_str() encoding:NSUTF8StringEncoding];
-        UILabel *valueLab = [ACRFactSetRenderer buildLabel:value
+        ACRUILabel *valueLab = [ACRFactSetRenderer buildLabel:value
                                                 hostConfig:acoConfig
                                                 textConfig:config->factSet.value
                                             containerStyle:style
@@ -145,6 +150,7 @@
                                                   rootView:rootView
                                                    element:elem];
         [valueLab setContentCompressionResistancePriority:UILayoutPriorityRequired forAxis:UILayoutConstraintAxisVertical];
+        [valueLab setContentHuggingPriority:UILayoutPriorityDefaultHigh forAxis:UILayoutConstraintAxisHorizontal];
         [titleStack addArrangedSubview:titleLab];
         [valueStack addArrangedSubview:valueLab];
         [NSLayoutConstraint constraintWithItem:valueLab attribute:NSLayoutAttributeHeight relatedBy:NSLayoutRelationEqual toItem:titleLab attribute:NSLayoutAttributeHeight multiplier:1.0 constant:0].active = YES;

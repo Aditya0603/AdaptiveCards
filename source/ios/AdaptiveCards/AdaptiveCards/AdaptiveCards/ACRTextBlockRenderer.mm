@@ -39,9 +39,9 @@
     std::shared_ptr<HostConfig> config = [acoConfig getHostConfig];
     std::shared_ptr<BaseCardElement> elem = [acoElem element];
     std::shared_ptr<TextBlock> txtBlck = std::dynamic_pointer_cast<TextBlock>(elem);
-    NSBundle *bundle = [NSBundle bundleWithIdentifier:@"MSFT.AdaptiveCards"];
-    ACRUILabel *lab = [bundle loadNibNamed:@"ACRLabelView" owner:rootView options:nil][0];
-
+    ACRUILabel *lab = [[ACRUILabel alloc] initWithFrame:CGRectMake(0,0,viewGroup.frame.size.width, 0)];
+    lab.backgroundColor = [UIColor clearColor];
+    
     lab.style = [viewGroup style];
     NSMutableAttributedString *content = nil;
     if(rootView){
@@ -54,36 +54,47 @@
         NSDictionary *options = data[@"options"];
         NSDictionary *descriptor = data[@"descriptor"];
         NSString *text = data[@"nonhtml"];
-
+        
         // Initializing NSMutableAttributedString for HTML rendering is very slow
         if(htmlData) {
             content = [[NSMutableAttributedString alloc] initWithData:htmlData options:options documentAttributes:nil error:nil];
             // Drop newline char
             [content deleteCharactersInRange:NSMakeRange([content length] -1, 1)];
+            lab.selectable = YES;
+            lab.dataDetectorTypes = UIDataDetectorTypeLink;
+            lab.userInteractionEnabled = YES;
         } else {
             // if html rendering is skipped, remove p tags from both ends (<p>, </p>)
             content = [[NSMutableAttributedString alloc] initWithString:text attributes:descriptor];
             [content deleteCharactersInRange:NSMakeRange(0, 3)];
             [content deleteCharactersInRange:NSMakeRange([content length] -4, 4)];
         }
-
+        lab.editable = NO;
+        lab.backgroundColor = [UIColor clearColor];
+        lab.textContainer.lineFragmentPadding = 0;
+        lab.textContainerInset = UIEdgeInsetsZero;
+        lab.layoutManager.usesFontLeading = false;
+        
         // Set paragraph style such as line break mode and alignment
         NSMutableParagraphStyle *paragraphStyle = [[NSMutableParagraphStyle alloc] init];
-        paragraphStyle.lineBreakMode = NSLineBreakByTruncatingTail;
         paragraphStyle.alignment = [ACOHostConfig getTextBlockAlignment:txtBlck->GetHorizontalAlignment()];
-
+        
         // Obtain text color to apply to the attributed string
         ACRContainerStyle style = lab.style;
         ColorsConfig &colorConfig = (style == ACREmphasis)? config->containerStyles.emphasisPalette.foregroundColors:
         config->containerStyles.defaultPalette.foregroundColors;
         // Add paragraph style, text color, text weight as attributes to a NSMutableAttributedString, content.
         [content addAttributes:@{NSParagraphStyleAttributeName:paragraphStyle, NSForegroundColorAttributeName:[ACOHostConfig getTextBlockColor:txtBlck->GetTextColor() colorsConfig:colorConfig subtleOption:txtBlck->GetIsSubtle()],} range:NSMakeRange(0, content.length)];
+        
+        lab.textContainer.lineBreakMode = NSLineBreakByTruncatingTail;
         lab.attributedText = content;
     }
+    lab.scrollEnabled = NO;
+    [lab sizeToFit];
 
-    lab.numberOfLines = int(txtBlck->GetMaxLines());
-    if(!lab.numberOfLines and !txtBlck->GetWrap()){
-        lab.numberOfLines = 1;
+    lab.textContainer.maximumNumberOfLines = int(txtBlck->GetMaxLines());
+    if(!lab.textContainer.maximumNumberOfLines and !txtBlck->GetWrap()){
+        lab.textContainer.maximumNumberOfLines = 1;
     }
 
     if(txtBlck->GetHeight() == HeightType::Auto){
