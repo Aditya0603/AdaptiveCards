@@ -17,5 +17,6 @@
 - (void)setInputs:(NSArray *)inputs;
 - (void)appendInputs:(NSArray *)inputs;
 - (NSArray<ACORemoteResourceInformation *> *)remoteResourceInformation;
+- (NSString * ) backgroundImage;
 
 @end

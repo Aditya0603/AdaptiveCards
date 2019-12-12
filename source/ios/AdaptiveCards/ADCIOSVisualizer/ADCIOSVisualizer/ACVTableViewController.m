@@ -17,19 +17,10 @@
     [super viewDidLoad];
 
     NSBundle *main = [NSBundle mainBundle];
-    pathsToFiles = [main pathsForResourcesOfType:@"json" inDirectory:nil];
-    NSInteger cnt = [pathsToFiles count];
-    enum DesiredIdx { eDefaultViewIdx = 2 };
-    if(cnt >= eDefaultViewIdx)
-    {
-        [_delegate source:self userconfig:[NSString stringWithContentsOfFile:[main pathForResource:@"sample" ofType:@"json"]
-                                                                    encoding:NSUTF8StringEncoding
-                                                                       error:nil]];
-        self.userSelectedJSon =
-        [NSString stringWithContentsOfFile:pathsToFiles[[pathsToFiles count] - eDefaultViewIdx]
-                                  encoding:NSUTF8StringEncoding
-                                     error:nil];
-    }
+  
+    [_delegate source:self userconfig:[NSString stringWithContentsOfFile:[main pathForResource:@"sample" ofType:@"json"]
+                                                                encoding:NSUTF8StringEncoding
+                                                                   error:nil]];
 }
 
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section
@@ -58,6 +49,41 @@
                               encoding:NSUTF8StringEncoding
                                  error:nil];
     [_delegate fromACVTable:self userSelectedJson:self.userSelectedJSon];
+    if (!self.IsCollapsed) {
+        UITableViewCell *cell = [tableView cellForRowAtIndexPath:indexPath];
+        CGFloat height = cell.frame.size.height;
+        self.tableHeight.active = NO;
+        self.tableHeight = [tableView.heightAnchor constraintEqualToConstant:height];
+        [UIView animateWithDuration:0.6 animations:^{ self.tableHeight.active = YES; } completion:^(BOOL finished){[tableView scrollToRowAtIndexPath:indexPath atScrollPosition:UITableViewScrollPositionTop animated:YES];}];
+        self.IsCollapsed = YES;
+        
+    } else {
+        [UIView animateWithDuration:0.6 animations:^{
+            self.tableHeight.active = NO;
+            self.tableHeight = [self.tableView.heightAnchor constraintEqualToConstant:200];
+            self.tableHeight.active = YES;
+        }];
+        self.IsCollapsed = NO;
+    }
+}
+
+- (void)updateTable:(NSArray<NSString *> *)data {
+    pathsToFiles = data;
+    if (self.tableView.hidden) {
+        if (data) {
+            [UIView animateWithDuration:0.6 animations:^{
+                self.tableView.hidden = NO;
+                self.tableHeight.active = NO;
+                self.tableHeight = [self.tableView.heightAnchor constraintEqualToConstant:200];
+                self.tableHeight.active = YES;
+            }];
+            self.IsCollapsed = NO;
+
+        }
+    } else if (!data) {
+        [UIView animateWithDuration:0.6 animations:^{self.tableView.hidden = YES;}];
+    }
+    [self.tableView reloadData];
 }
 
 @end

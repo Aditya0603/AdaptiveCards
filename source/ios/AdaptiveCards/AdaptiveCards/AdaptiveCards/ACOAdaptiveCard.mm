@@ -15,6 +15,7 @@
 #import "ParseResult.h"
 #import "ACRErrors.h"
 #import "ACORemoteResourceInformationPrivate.h"
+#include "BackgroundImage.h"
 
 using namespace AdaptiveCards;
 
@@ -96,6 +97,14 @@ using namespace AdaptiveCards;
 - (void)setCard:(std::shared_ptr<AdaptiveCard> const &)card
 {
     _adaptiveCard = card;
+}
+
+- (NSString * ) backgroundImage {
+    auto backgroundImageProperties = _adaptiveCard->GetBackgroundImage();
+    if((backgroundImageProperties != nullptr) && !(backgroundImageProperties->GetUrl().empty())) {
+        return [NSString stringWithCString:backgroundImageProperties->GetUrl().c_str() encoding:[NSString defaultCStringEncoding]];
+    }
+    return nil;
 }
 
 - (NSArray<ACORemoteResourceInformation *> *)remoteResourceInformation

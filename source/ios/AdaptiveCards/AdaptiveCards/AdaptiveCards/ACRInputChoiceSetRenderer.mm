@@ -12,6 +12,7 @@
 #import "ACRChoiceSetViewDataSourceCompactStyle.h"
 #import "ACOHostConfigPrivate.h"
 #import "ACOBaseCardElementPrivate.h"
+#import "UtiliOS.h"
 
 @implementation ACRInputChoiceSetRenderer
 
@@ -53,7 +54,7 @@
         dataSource = [[ACRChoiceSetViewDataSourceCompactStyle alloc] initWithInputChoiceSet:choiceSet rootView:rootView];
         [choiceSetView setSeparatorStyle:UITableViewCellSeparatorStyleNone];
     } else {
-        dataSource = [[ACRChoiceSetViewDataSource alloc] initWithInputChoiceSet:choiceSet];
+        dataSource = [[ACRChoiceSetViewDataSource alloc] initWithInputChoiceSet:choiceSet WithHostConfig:config];
         [choiceSetView setSeparatorStyle:UITableViewCellSeparatorStyleNone];
     }
 
@@ -74,6 +75,8 @@
     } else {
         [viewGroup addArrangedSubview:choiceSetView];
     }
+
+    configVisibility(choiceSetView, elem);
 
     return choiceSetView;
 }

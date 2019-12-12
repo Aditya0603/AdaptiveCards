@@ -14,6 +14,7 @@
 #import "ACOHostConfigPrivate.h"
 #import "ACOBaseCardElementPrivate.h"
 #import "ACRToggleInputDataSource.h"
+#import "UtiliOS.h"
 
 @implementation ACRInputToggleRenderer
 
@@ -46,6 +47,7 @@
     inputTableView.frame = CGRectMake(0, 0, viewGroup.frame.size.width, viewGroup.frame.size.height);
     [inputTableView setSeparatorStyle:UITableViewCellSeparatorStyleNone];
     ACRToggleInputDataSource *dataSource = [[ACRToggleInputDataSource alloc] initWithInputToggle:toggleBlck WithHostConfig:config];
+    dataSource.parentStyle = viewGroup.style;
     inputTableView.delegate = dataSource;
     inputTableView.dataSource = dataSource;
 
@@ -63,20 +65,9 @@
     } else {
         [viewGroup addArrangedSubview:inputTableView];
     }
-    [NSLayoutConstraint constraintWithItem:inputTableView
-                                 attribute:NSLayoutAttributeLeading
-                                 relatedBy:NSLayoutRelationLessThanOrEqual
-                                    toItem:viewGroup
-                                 attribute:NSLayoutAttributeLeading
-                                multiplier:1.0
-                                  constant:0].active = YES;
-    [NSLayoutConstraint constraintWithItem:inputTableView
-                                 attribute:NSLayoutAttributeTrailing
-                                 relatedBy:NSLayoutRelationLessThanOrEqual
-                                    toItem:viewGroup
-                                 attribute:NSLayoutAttributeTrailing
-                                multiplier:1.0
-                                  constant:0].active = YES;
+
+    configVisibility(inputTableView, elem);
+
     return inputTableView;
 }
 

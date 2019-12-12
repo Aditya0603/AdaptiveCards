@@ -20,8 +20,10 @@
 #import "ACRButton.h"
 #import "ACRAggregateTarget.h"
 #import "ACRShowCardTarget.h"
+#import "ACRToggleVisibilityTarget.h"
 #import "ACRActionOpenURLRenderer.h"
 #import "ACRUIImageView.h"
+#import "UtiliOS.h"
 
 @implementation ACRInputRenderer
 
@@ -212,27 +214,20 @@
             [button setTitle:title forState:UIControlStateNormal];
         }
         ACOBaseActionElement *acoAction = [[ACOBaseActionElement alloc] init];
-        [acoAction setElem:action];
-        ACRAggregateTarget *target = [[ACRAggregateTarget alloc] initWithActionElement:acoAction rootView:rootView];
-
-        switch (action->GetElementType()) {
-            case ActionType::ShowCard:
-                [button addTarget:target action:@selector(toggleVisibilityOfShowCard) forControlEvents:UIControlEventTouchUpInside];
-                break;
-            case ActionType::Submit:
-                [txtInput setReturnKeyType:UIReturnKeySend];
-                quickReplyView.target = target;
-            case ActionType::OpenUrl:
-                [button addTarget:target action:@selector(send:) forControlEvents:UIControlEventTouchUpInside];
-                break;
-            default:
-                break;
+        [acoAction setElem:action];        
+        
+        NSObject *target;
+        if (ACRRenderingStatus::ACROk == buildTargetForButton([rootView getQuickReplyTargetBuilderDirector], action, button, &target)) {
+            if (action->GetElementType() == ActionType::Submit) { 
+                quickReplyView.target = (ACRAggregateTarget *)target;
+            }
+            [viewGroup addTarget:target];
         }
-
-        [viewGroup addTarget:target];
     } else {
         [inputs addObject:inputview];
     }
+
+    configVisibility(inputview, elem);
 
     return inputview;
 }
